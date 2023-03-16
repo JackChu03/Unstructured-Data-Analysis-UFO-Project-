@@ -1,0 +1,132 @@
+---
+title: "UFO Project"
+author: "Jack Chu"
+date: "2023-02-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### UFO
+
+## Collect 12 months UFO website
+```{r}
+library(rvest)
+ufo_full_sub_link <- c()
+
+
+for (i in 1:12){
+  if (i < 10){
+    link <- paste0("https://nuforc.org/webreports/ndxe20220", i, ".html")
+  } else {
+    link <- paste0("https://nuforc.org/webreports/ndxe2022", i, ".html")
+  }
+  ufo_link <- read_html(link) 
+  
+  ufo_link <-  ufo_link %>% 
+  html_elements("a") %>% 
+  html_attr("href")
+
+  ufo_link <- ufo_link[2:length(ufo_link)]
+  
+  ufo_full_sub_link <- c(ufo_full_sub_link, ufo_link)
+}
+```
+
+
+## Read in 12 months UFO Texts
+```{r}
+ufo_full_text <- c()
+for (sub_link in ufo_full_sub_link){
+  full_ufo_link <- paste0("https://nuforc.org/webreports/", sub_link)
+  ufo_text <- read_html(full_ufo_link) 
+  ufo_text <-  ufo_text %>% 
+  html_elements("font") %>% 
+  html_text()
+  ufo_full_text <- c(ufo_full_text, ufo_text)
+}
+
+```
+
+
+## Text Cleaning
+```{r}
+library(stringr)
+library(tm)
+library(textclean)    
+library(textstem)
+
+ufo_full_text <- str_replace_all(ufo_full_text, "\n", " ") %>% 
+  gsub("([a-z])([A-Z])", "\\1 \\2", .)
+
+ufo_full_text <- str_remove_all(ufo_full_text, "National UFO Reporting Center Sighting Report")
+
+ufo_full_text <- gsub("NUFORC Home Report Indexes : .*", "", ufo_full_text)
+
+ufo_full_text <- gsub("Occurred : .*", "", ufo_full_text)
+
+ufo_full_text <- gsub("�", "'", ufo_full_text)
+
+ufo_full_text <- gsub("MADAR Node.*", "", ufo_full_text)
+
+ufo_full_text <- gsub("\u0092", "'", ufo_full_text)
+
+ufo_full_text <- gsub("\u0093", "", ufo_full_text)
+
+ufo_full_text <- gsub("\u0094", "", ufo_full_text)
+
+# Prepare for Topic Analysis
+ufo_topic_prep <- ufo_full_text %>% 
+  lemmatize_strings() %>% 
+  tolower() %>% 
+  removeNumbers() %>% 
+  removePunctuation() %>% 
+  replace_contraction() %>% 
+  stripWhitespace()
+
+ufo_topic_prep <- tm::removeWords(ufo_topic_prep, words = c(stopwords("en"), "ufo", "object",
+ "know", "watch", "cloud", "southeast", "southwest", "northeast", "northwest", "see", "like", "dark", "color", "one", "spot", "say", "home", "drive", "first", "just", "assume", "notice", "think", "south", "west", "east", "north"))
+```
+
+
+## Topic Analysis
+```{r}
+library(quanteda)
+library(stm)
+
+ufo_corpus <- corpus(ufo_topic_prep)
+
+ufo_corpus <- ufo_corpus[!(ufo_corpus== "")]
+
+ufo_tokens <- quanteda::tokens(ufo_corpus)
+
+ufo_dfm <- dfm(ufo_tokens)
+
+ufo_dfm <- dfm_trim(ufo_dfm, sparsity = 0.990)
+
+ufo_stm <- convert(ufo_dfm, to = "stm")
+
+docs_stm <- ufo_stm$documents 
+vocab_stm <- ufo_stm$vocab    
+meta_stm <- ufo_stm$meta
+
+ufoPrep <- prepDocuments(documents = docs_stm, 
+                           vocab = vocab_stm,
+                           meta = meta_stm)
+
+kTest <- searchK(documents = ufoPrep$documents, 
+             vocab = ufoPrep$vocab, 
+             K = c(3, 4, 5, 7, 10), verbose = FALSE)
+
+plot(kTest)
+
+topics5 <- stm(documents = ufoPrep$documents, 
+             vocab = ufoPrep$vocab, seed = 1001,
+             K = 4, verbose = FALSE)
+labelTopics(topics5)
+```
+
+
+

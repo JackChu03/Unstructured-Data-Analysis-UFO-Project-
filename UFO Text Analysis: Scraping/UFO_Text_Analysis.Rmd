@@ -1,0 +1,372 @@
+---
+title: "UFO 4"
+author: "Jack Chu"
+date: "2023-02-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## UFO Selceted Cities Text
+
+Albuquerque: 
+```{r}
+library(rvest)
+library(dplyr)
+library(stringr)
+
+locations <- c()
+shapes <- c()
+texts <- c()
+years <- c()
+months <- c()
+
+alb_link <- "https://nuforc.org/webreports/ndxlNM.html"
+ufo_sub_alb_link <-  read_html(alb_link) 
+ufo_sub_alb_link <-  ufo_sub_alb_link %>% 
+      html_elements("a") %>% 
+      html_attr("href")
+ufo_sub_alb_link <- ufo_sub_alb_link[2:length(ufo_sub_alb_link)]
+full_ufo_link <- paste0("https://nuforc.org/webreports/", ufo_sub_alb_link)
+
+for (link in full_ufo_link){
+      ufo_ori_text <- read_html(link) 
+      ufo_ori_text <-  ufo_ori_text %>% 
+        html_elements("font") %>% 
+        html_text()
+      
+      shape <- ufo_ori_text[5] %>% 
+      gsub("([a-z])([A-Z])", "\\1 \\2", .)
+      shape <- unlist(str_extract_all(shape, "Shape: [A-Za-z]*"))
+      shape <- substr(shape, 8, length(unlist(strsplit(shape , ""))))
+      
+      location <- unlist(str_extract_all(ufo_ori_text, "Location: [A-Za-z //]*,"))
+      location <- substr(location, 11, length(unlist(strsplit(location, "")))-1)
+      
+      ufo_text <- str_replace_all(ufo_ori_text[6], "\n", " ") %>% 
+              gsub("([a-z])([A-Z])", "\\1 \\2", .) %>% 
+              gsub("�", "'", .) %>% 
+              gsub("\u0092", "'", .) %>% 
+              gsub("\u0093", "", .) %>% 
+              gsub("\u0094", "", .)
+      
+      if (length(location) > 0){
+        if (location[1] %in% c("Albuquerque")){
+          time <- unlist(str_extract_all(ufo_ori_text[5], "Occurred : [0-9/]*"))
+          month <- unlist(str_extract_all(time, ": [0-9]*/"))
+          month <- unlist(str_extract_all(month, "[0-9]*"))[3]
+          year <- substr(time, length(unlist(strsplit(time, "")))-3,           
+                         length(unlist(strsplit(time, ""))))
+          years <- c(years, year)
+          months <- c(months, month)
+          locations <- c(locations, location)
+          shapes <- c(shapes, shape)
+          texts <- c(texts, ufo_text)
+        }
+      }
+}
+df_alb <-  data.frame(Year=years, Month=months, Location=locations, Shape=shapes,
+                      Text=texts)
+df_alb_1980 <- df_alb[df_alb$Year > 1980,]
+
+#######################################################################
+library(textclean)
+require(tm)
+library(textstem)
+library(dplyr)
+
+df_alb_1980$clean_Text <- df_alb_1980$Text %>% 
+  lemmatize_strings() %>% 
+  tolower() %>% 
+  removeNumbers() %>% 
+  removePunctuation() %>% 
+  replace_contraction() %>% 
+  stripWhitespace()
+
+df_alb_1980$clean_Text <- tm::removeWords(df_alb_1980$clean_Text, words = c(stopwords("en"), "ufo", "object", "know", "watch", "cloud", "southeast", "southwest", "northeast", "northwest", "see", "like", "dark", "color", "one", "spot", "say", "home", "drive", "first", "just", "assume", "notice", "think", "south", "west", "east", "north", "madar node",  "nuforc", "note"))
+
+df_alb_1980$Text <- df_alb_1980$Text %>% tm::removeWords("MADAR Node") %>% 
+                      tolower() %>% 
+                      removeNumbers()
+```
+
+Myrtle Beach: 
+```{r}
+locations <- c()
+shapes <- c()
+texts <- c()
+years <- c()
+months <- c()
+
+mb_link <- "https://nuforc.org/webreports/ndxlSC.html"
+ufo_sub_mb_link <-  read_html(mb_link) 
+ufo_sub_mb_link <-  ufo_sub_mb_link %>% 
+      html_elements("a") %>% 
+      html_attr("href")
+ufo_sub_mb_link <- ufo_sub_mb_link[2:length(ufo_sub_mb_link)]
+full_ufo_link <- paste0("https://nuforc.org/webreports/", ufo_sub_mb_link)
+
+for (link in full_ufo_link){
+      ufo_ori_text <- read_html(link) 
+      ufo_ori_text <-  ufo_ori_text %>% 
+        html_elements("font") %>% 
+        html_text()
+      
+      shape <- ufo_ori_text[5] %>% 
+      gsub("([a-z])([A-Z])", "\\1 \\2", .)
+      shape <- unlist(str_extract_all(shape, "Shape: [A-Za-z]*"))
+      shape <- substr(shape, 8, length(unlist(strsplit(shape , ""))))
+      
+      location <- unlist(str_extract_all(ufo_ori_text, "Location: [A-Za-z //]*,"))
+      location <- substr(location, 11, length(unlist(strsplit(location, "")))-1)
+      
+      ufo_text <- str_replace_all(ufo_ori_text[6], "\n", " ") %>% 
+              gsub("([a-z])([A-Z])", "\\1 \\2", .) %>% 
+              gsub("�", "'", .) %>% 
+              gsub("\u0092", "'", .) %>% 
+              gsub("\u0093", "", .) %>% 
+              gsub("\u0094", "", .)
+      
+      if (length(location) > 0){
+        if (location[1] == "Myrtle Beach"){
+          time <- unlist(str_extract_all(ufo_ori_text[5], "Occurred : [0-9/]*"))
+          month <- unlist(str_extract_all(time, ": [0-9]*/"))
+          month <- unlist(str_extract_all(month, "[0-9]*"))[3]
+          year <- substr(time, length(unlist(strsplit(time, "")))-3,           
+                         length(unlist(strsplit(time, ""))))
+          years <- c(years, year)
+          months <- c(months, month)
+          locations <- c(locations, location)
+          shapes <- c(shapes, shape)
+          texts <- c(texts, ufo_text)
+        }
+      }
+}
+df_mb <-  data.frame(Year=years, Month=months, Location=locations, Shape=shapes,
+                      Text=texts)
+df_mb_1980 <- df_mb[df_mb$Year > 1980,]
+
+#######################################################################
+
+df_mb_1980$clean_Text <- df_mb_1980$Text %>% 
+  lemmatize_strings() %>% 
+  tolower() %>% 
+  removeNumbers() %>% 
+  removePunctuation() %>% 
+  replace_contraction() %>% 
+  stripWhitespace()
+
+df_mb_1980$clean_Text <- tm::removeWords(df_mb_1980$clean_Text, words = c(stopwords("en"), "ufo", "object", "know", "watch", "cloud", "southeast", "southwest", "northeast", "northwest", "see", "like", "dark", "color", "one", "spot", "say", "home", "drive", "first", "just", "assume", "notice", "think", "south", "west", "east", "north", "madar node", "nuforc", "note"))
+
+df_mb_1980$Text <- df_mb_1980$Text %>% tm::removeWords("MADAR Node") %>% 
+                      tolower() %>% 
+                      removeNumbers()
+```
+
+
+Boise: 
+```{r}
+locations <- c()
+shapes <- c()
+texts <- c()
+years <- c()
+months <- c()
+
+boi_link <- "https://nuforc.org/webreports/ndxlID.html"
+ufo_sub_boi_link <-  read_html(boi_link) 
+ufo_sub_boi_link <-  ufo_sub_boi_link %>% 
+      html_elements("a") %>% 
+      html_attr("href")
+ufo_sub_boi_link <- ufo_sub_boi_link[2:length(ufo_sub_boi_link)]
+full_ufo_link <- paste0("https://nuforc.org/webreports/", ufo_sub_boi_link)
+
+for (link in full_ufo_link){
+      ufo_ori_text <- read_html(link) 
+      ufo_ori_text <-  ufo_ori_text %>% 
+        html_elements("font") %>% 
+        html_text()
+      
+      shape <- ufo_ori_text[5] %>% 
+      gsub("([a-z])([A-Z])", "\\1 \\2", .)
+      shape <- unlist(str_extract_all(shape, "Shape: [A-Za-z]*"))
+      shape <- substr(shape, 8, length(unlist(strsplit(shape , ""))))
+      
+      location <- unlist(str_extract_all(ufo_ori_text, "Location: [A-Za-z //]*,"))
+      location <- substr(location, 11, length(unlist(strsplit(location, "")))-1)
+      
+      ufo_text <- str_replace_all(ufo_ori_text[6], "\n", " ") %>% 
+              gsub("([a-z])([A-Z])", "\\1 \\2", .) %>% 
+              gsub("�", "'", .) %>% 
+              gsub("\u0092", "'", .) %>% 
+              gsub("\u0093", "", .) %>% 
+              gsub("\u0094", "", .)
+      
+      if (length(location) > 0){
+        if (location[1] %in% c("Boise")){
+          time <- unlist(str_extract_all(ufo_ori_text[5], "Occurred : [0-9/]*"))
+          month <- unlist(str_extract_all(time, ": [0-9]*/"))
+          month <- unlist(str_extract_all(month, "[0-9]*"))[3]
+          year <- substr(time, length(unlist(strsplit(time, "")))-3,           
+                         length(unlist(strsplit(time, ""))))
+          years <- c(years, year)
+          months <- c(months, month)
+          locations <- c(locations, location)
+          shapes <- c(shapes, shape)
+          texts <- c(texts, ufo_text)
+        }
+      }
+}
+df_boi <-  data.frame(Year=years, Month=months, Location=locations, Shape=shapes,
+                      Text=texts)
+df_boi_1980 <- df_boi[df_boi$Year > 1980,]
+
+#######################################################################
+
+df_boi_1980$clean_Text <- df_boi_1980$Text %>% 
+  lemmatize_strings() %>% 
+  tolower() %>% 
+  removeNumbers() %>% 
+  removePunctuation() %>% 
+  replace_contraction() %>% 
+  stripWhitespace()
+
+df_boi_1980$clean_Text <- tm::removeWords(df_boi_1980$clean_Text, words = c(stopwords("en"), "ufo", "object", "know", "watch", "cloud", "southeast", "southwest", "northeast", "northwest", "see", "like", "dark", "color", "one", "spot", "say", "home", "drive", "first", "just", "assume", "notice", "think", "south", "west", "east", "north", "madar node", "nuforc", "note"))
+
+df_boi_1980$Text <- df_boi_1980$Text %>% tm::removeWords("MADAR Node") %>% 
+                      tolower() %>% 
+                      removeNumbers()
+```
+
+Term Frequency Analysis
+```{r}
+#Alb
+library(tidytext)
+trigrams_alb <- df_alb_1980 %>% 
+  unnest_tokens(., ngrams, clean_Text, token = "ngrams", n = 3) %>% 
+  tidyr::separate(ngrams, c("word1", "word2", "word3"), sep = "\\s") %>% 
+  count(word1, word2, word3, sort = TRUE)
+trigrams_alb
+
+bigrams_alb <- df_alb_1980 %>% 
+  unnest_tokens(., ngrams, clean_Text, token = "ngrams", n = 2) %>% 
+  tidyr::separate(ngrams, c("word1", "word2"), sep = "\\s") %>% 
+  count(word1, word2, sort = TRUE)
+bigrams_alb
+
+term_freq_alb <- df_alb_1980 %>% 
+  unnest_tokens(., ngrams, Text, token = "ngrams", n = 1) %>% 
+  tidyr::separate(ngrams, c("word1"), sep = "\\s") %>% 
+  count(word1, sort = TRUE)
+term_freq_alb
+
+table(df_alb_1980$Shape)
+
+#mb
+trigrams_mb <- df_mb_1980 %>% 
+  unnest_tokens(., ngrams, clean_Text, token = "ngrams", n = 3) %>% 
+  tidyr::separate(ngrams, c("word1", "word2", "word3"), sep = "\\s") %>% 
+  count(word1, word2, word3, sort = TRUE)
+trigrams_mb
+
+bigrams_mb <- df_mb_1980 %>% 
+  unnest_tokens(., ngrams, clean_Text, token = "ngrams", n = 2) %>% 
+  tidyr::separate(ngrams, c("word1", "word2"), sep = "\\s") %>% 
+  count(word1, word2, sort = TRUE)
+bigrams_mb
+
+term_freq_mb <- df_mb_1980 %>% 
+  unnest_tokens(., ngrams, Text, token = "ngrams", n = 1) %>% 
+  tidyr::separate(ngrams, c("word1"), sep = "\\s") %>% 
+  count(word1, sort = TRUE)
+term_freq_mb
+
+table(df_mb_1980$Shape)
+
+#boi
+bigrams_boi <- df_boi_1980 %>% 
+  unnest_tokens(., ngrams, Text, token = "ngrams", n = 2) %>% 
+  tidyr::separate(ngrams, c("word1", "word2"), sep = "\\s") %>% 
+  count(word1, word2, sort = TRUE)
+bigrams_boi
+
+term_freq_boi <- df_boi_1980 %>% 
+  unnest_tokens(., ngrams, Text, token = "ngrams", n = 1) %>% 
+  tidyr::separate(ngrams, c("word1"), sep = "\\s") %>% 
+  count(word1, sort = TRUE)
+term_freq_boi
+
+table(df_boi_1980$Shape)
+```
+
+
+Sentiment Analysis
+```{r}
+#alb
+library(sentimentr)
+sent_albs <- c()
+for (text in df_alb_1980$Text){
+  sent_alb <- sentiment(text, 
+  polarity_dt = lexicon::hash_sentiment_jockers)
+  sent_alb <- sent_alb %>% 
+                group_by(element_id) %>% 
+                summarize(mean_sent = mean(sentiment))
+  sent_albs <- c(sent_albs, sent_alb$mean_sent)
+}
+df_alb_1980$sent <- sent_albs
+
+group_alb_1980 <- df_alb_1980 %>% 
+  group_by(Year) %>% 
+  summarise(mean_sent=mean(sent))
+
+group_alb_1980$City <- rep("Albuquerque", length(group_alb_1980$Year))
+
+#mb
+sent_mbs <- c()
+for (text in df_mb_1980$Text){
+  sent_mb <- sentiment(text, 
+  polarity_dt = lexicon::hash_sentiment_jockers)
+  sent_mb <- sent_mb %>% 
+                group_by(element_id) %>% 
+                summarize(mean_sent = mean(sentiment))
+  sent_mbs <- c(sent_mbs, sent_mb$mean_sent)
+}
+df_mb_1980$sent <- sent_mbs
+
+group_mb_1980 <- df_mb_1980 %>% 
+  group_by(Year) %>% 
+  summarise(mean_sent=mean(sent))
+
+group_mb_1980$City <- rep("Myrtle Beach", length(group_mb_1980$Year))
+
+#boi
+sent_bois <- c()
+for (text in df_boi_1980$Text){
+  sent_boi <- sentiment(text, 
+  polarity_dt = lexicon::hash_sentiment_jockers)
+  sent_boi <- sent_boi %>% 
+                group_by(element_id) %>% 
+                summarize(mean_sent = mean(sentiment))
+  sent_bois <- c(sent_bois, sent_boi$mean_sent)
+}
+df_boi_1980$sent <- sent_bois
+
+group_boi_1980 <- df_boi_1980 %>% 
+  group_by(Year) %>% 
+  summarise(mean_sent=mean(sent))
+
+group_boi_1980$City <- rep("Boise", length(group_boi_1980$Year))
+```
+
+
+Make some plots
+```{r}
+library(openxlsx)
+
+group_plot <- rbind(group_boi_1980, group_alb_1980)
+group_plot <- rbind(group_plot, group_mb_1980)
+
+write.xlsx(group_plot, "/Users/zhuguanyu/Desktop/group_1980.xlsx", rowNames = FALSE)
+```
+

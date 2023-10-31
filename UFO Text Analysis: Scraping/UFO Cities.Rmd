@@ -8,12 +8,12 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-## The following code is my way of scraping the UFO Sighting Reports (from 1980-2022) from the National UFO Report Center website.
+## The following code is my way of scraping the UFO Sighting Reports (from 1980-2020) from the National UFO Report Center website.
 ## I later grouped each of them so I could know the frequency of the cities that have UFO sightings. Eventually, I organized them into a 
 ## data frame so I ccould use it for data visualization purposes in Tableau.
 
 
-## UFO Sightings Cities (1980- present)
+## UFO Sightings Cities (1980- 2020)
 ## (Scraped only the "city" text from all the UFO Sightings Reports happening since 1980)
 1980-1984 City
 ```{r}
@@ -240,7 +240,7 @@ df_2015$year <- rep("2015", length(df_2015$city))
 ```
 
 
-## Combine 1984 - 2022 City data and export to excel
+## Combine 1984 - 2020 City data and export to excel
 ```{r}
 df_40 <- data.frame()
 df_40 <- rbind(df_40, df_1980)

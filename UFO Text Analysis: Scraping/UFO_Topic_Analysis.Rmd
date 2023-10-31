@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### UFO
 
-## Collect 12 months UFO website
+## Collect all the UFO Sightings Reports in the past 12 months from the NUFORC website 
 ```{r}
 library(rvest)
 ufo_full_sub_link <- c()
@@ -36,7 +36,7 @@ for (i in 1:12){
 ```
 
 
-## Read in 12 months UFO Texts
+## Read in the 12 months UFO Texts
 ```{r}
 ufo_full_text <- c()
 for (sub_link in ufo_full_sub_link){

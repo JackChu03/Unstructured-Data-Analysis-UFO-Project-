@@ -182,7 +182,6 @@ df_2005 <- data.frame(city=ufo_2005, count=rep(1, length(ufo_2005)))
 df_2005$year <- rep("2005", length(df_2005$city))
 ```
 
-
 2010-2014 City
 ```{r}
 ufo_2010 <- c()
@@ -210,7 +209,6 @@ df_2010 <- data.frame(city=ufo_2010, count=rep(1, length(ufo_2010)))
   #summarise(count=sum(count))
 df_2010$year <- rep("2010", length(df_2010$city))
 ```
-
 
 2015-2020 City
 ```{r}
@@ -241,7 +239,7 @@ df_2015$year <- rep("2015", length(df_2015$city))
 ```
 
 
-Combine 1984 - 2022 City data and export to excel
+## Combine 1984 - 2022 City data and export to excel
 ```{r}
 df_40 <- data.frame()
 df_40 <- rbind(df_40, df_1980)

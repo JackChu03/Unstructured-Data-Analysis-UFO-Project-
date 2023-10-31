@@ -256,7 +256,8 @@ df_boi_1980$Text <- df_boi_1980$Text %>% tm::removeWords("MADAR Node") %>%
                       removeNumbers()
 ```
 
-## Term Frequency Analysis for 3 cities
+
+## Term Frequency Analysis for 3 cities' UFO sighting reports
 ```{r}
 #Alb
 library(tidytext)
@@ -318,7 +319,7 @@ table(df_boi_1980$Shape)
 ```
 
 
-## Sentiment Analysis for 3 cities
+## Sentiment Analysis for 3 cities' UFO sighting reports
 ```{r}
 #alb
 library(sentimentr)

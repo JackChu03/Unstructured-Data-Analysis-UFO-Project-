@@ -9,7 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## I selected cities (Albuquerque/Boise/Myrtle Beach) that have relatively high UFO sightings to conduct text analysis and sentiment ## analysis.
+## I selected cities (Albuquerque/Boise/Myrtle Beach) that have relatively high UFO sightings to conduct text analysis and sentiment 
+## analysis.
 
 
 ## UFO Selected Cities Text:

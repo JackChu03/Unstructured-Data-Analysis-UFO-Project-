@@ -13,7 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ## data frame so I ccould use it for data visualization purposes in Tableau.
 
 
-## UFO Sighting Cities (1980- present)
+## UFO Sightings Cities (1980- present)
+## (Scraped only the "city" text from all the UFO Sightings Reports happening since 1980)
 1980-1984 City
 ```{r}
 library(rvest)

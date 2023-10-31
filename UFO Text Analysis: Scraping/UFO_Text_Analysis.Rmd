@@ -35,7 +35,7 @@ ufo_sub_alb_link <-  ufo_sub_alb_link %>%
 ufo_sub_alb_link <- ufo_sub_alb_link[2:length(ufo_sub_alb_link)]
 full_ufo_link <- paste0("https://nuforc.org/webreports/", ufo_sub_alb_link)
 
-# 
+# Read into each link and select the text related to Albuquerque
 for (link in full_ufo_link){
       ufo_ori_text <- read_html(link) 
       ufo_ori_text <-  ufo_ori_text %>% 

@@ -9,8 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ## The following code is my way of scraping the UFO Sighting Reports (from 1980-2022) from the National UFO Report Center website.
-   I later grouped each of them so I could know the frequency of the cities that have UFO sightings. Eventually, I organized them into a 
-   data frame so I can use it for data visualization purposes in Tableau.
+## I later grouped each of them so I could know the frequency of the cities that have UFO sightings. Eventually, I organized them into a 
+## data frame so I ccould use it for data visualization purposes in Tableau.
 
 
 ## UFO Sightseeing Cities (1984- present)

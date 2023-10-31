@@ -9,9 +9,12 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## UFO Selceted Cities Text
+## I selected cities (Albuquerque/Boise/Myrtle Beach) that have relatively high sightings to conduct text analysis and sentiment analysis.
 
-Albuquerque: 
+
+## UFO Selected Cities Text:
+
+1. Albuquerque: 
 ```{r}
 library(rvest)
 library(dplyr)
@@ -23,6 +26,7 @@ texts <- c()
 years <- c()
 months <- c()
 
+# Prepare the links -> Read into the page of NM State on the NUFORC website, which contains all the links to its "UFO Sightings Reports" 
 alb_link <- "https://nuforc.org/webreports/ndxlNM.html"
 ufo_sub_alb_link <-  read_html(alb_link) 
 ufo_sub_alb_link <-  ufo_sub_alb_link %>% 
@@ -31,27 +35,32 @@ ufo_sub_alb_link <-  ufo_sub_alb_link %>%
 ufo_sub_alb_link <- ufo_sub_alb_link[2:length(ufo_sub_alb_link)]
 full_ufo_link <- paste0("https://nuforc.org/webreports/", ufo_sub_alb_link)
 
+# 
 for (link in full_ufo_link){
       ufo_ori_text <- read_html(link) 
       ufo_ori_text <-  ufo_ori_text %>% 
         html_elements("font") %>% 
         html_text()
-      
+
+      # Extract the Shape text 
       shape <- ufo_ori_text[5] %>% 
       gsub("([a-z])([A-Z])", "\\1 \\2", .)
       shape <- unlist(str_extract_all(shape, "Shape: [A-Za-z]*"))
       shape <- substr(shape, 8, length(unlist(strsplit(shape , ""))))
-      
+
+      # Extract the Location text
       location <- unlist(str_extract_all(ufo_ori_text, "Location: [A-Za-z //]*,"))
       location <- substr(location, 11, length(unlist(strsplit(location, "")))-1)
-      
+
+      # Extract the main UFO Sightings Contents
       ufo_text <- str_replace_all(ufo_ori_text[6], "\n", " ") %>% 
               gsub("([a-z])([A-Z])", "\\1 \\2", .) %>% 
               gsub("�", "'", .) %>% 
               gsub("\u0092", "'", .) %>% 
               gsub("\u0093", "", .) %>% 
               gsub("\u0094", "", .)
-      
+
+      # Save only if it's related to the Albuquerque one
       if (length(location) > 0){
         if (location[1] %in% c("Albuquerque")){
           time <- unlist(str_extract_all(ufo_ori_text[5], "Occurred : [0-9/]*"))
@@ -67,6 +76,8 @@ for (link in full_ufo_link){
         }
       }
 }
+
+# Save it into df
 df_alb <-  data.frame(Year=years, Month=months, Location=locations, Shape=shapes,
                       Text=texts)
 df_alb_1980 <- df_alb[df_alb$Year > 1980,]
@@ -77,6 +88,8 @@ require(tm)
 library(textstem)
 library(dplyr)
 
+
+# Clean the Text so it removes redundant things unrelated to the text analysis
 df_alb_1980$clean_Text <- df_alb_1980$Text %>% 
   lemmatize_strings() %>% 
   tolower() %>% 
@@ -85,6 +98,8 @@ df_alb_1980$clean_Text <- df_alb_1980$Text %>%
   replace_contraction() %>% 
   stripWhitespace()
 
+
+# Specifically make them cleaner
 df_alb_1980$clean_Text <- tm::removeWords(df_alb_1980$clean_Text, words = c(stopwords("en"), "ufo", "object", "know", "watch", "cloud", "southeast", "southwest", "northeast", "northwest", "see", "like", "dark", "color", "one", "spot", "say", "home", "drive", "first", "just", "assume", "notice", "think", "south", "west", "east", "north", "madar node",  "nuforc", "note"))
 
 df_alb_1980$Text <- df_alb_1980$Text %>% tm::removeWords("MADAR Node") %>% 
@@ -92,7 +107,8 @@ df_alb_1980$Text <- df_alb_1980$Text %>% tm::removeWords("MADAR Node") %>%
                       removeNumbers()
 ```
 
-Myrtle Beach: 
+
+2. Myrtle Beach: 
 ```{r}
 locations <- c()
 shapes <- c()
@@ -166,7 +182,8 @@ df_mb_1980$Text <- df_mb_1980$Text %>% tm::removeWords("MADAR Node") %>%
 ```
 
 
-Boise: 
+
+3. Boise: 
 ```{r}
 locations <- c()
 shapes <- c()
@@ -360,7 +377,7 @@ group_boi_1980$City <- rep("Boise", length(group_boi_1980$Year))
 ```
 
 
-Make some plots
+## Make some plots in Tableau
 ```{r}
 library(openxlsx)
 
